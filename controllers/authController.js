@@ -1,0 +1,30 @@
+const bcrypt = require('bcrypt')
+
+const usersDB = {
+    users: require('../model/users.json'),
+    setUsers: function (data) { this.users = data }
+}
+
+const handleLogin = async (req, res) => {
+    const { user, pwd } = req.body
+    if (!user || !pwd) {
+        return res.status(400).json({ 'message': 'Username and Password are required!' })
+    } else {
+        //find user if does exist
+        const foundUser = usersDB.users.find(person => person.username === user)
+        if (!foundUser) {
+            return res.sendStatus(401) //401 status code is unauthorized
+        } else {
+            //evaluate password using bcrypt compare
+            const matched = await bcrypt.compare(pwd, foundUser.password)
+            if (matched) {
+                //create JWTs from from this spot
+                res.json({ 'success': `User ${user} is logged in!` })
+            } else {
+                res.sendStatus(401) //401 status code is unauthorized
+            }
+        }
+    }
+}
+
+module.exports = { handleLogin }
