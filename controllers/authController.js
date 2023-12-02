@@ -16,7 +16,8 @@ const handleLogin = async (req, res) => {
             const matched = await bcrypt.compare(pwd, foundUser.password)
             if (matched) {
                 //get all values for roles
-                const roles = Object.values(foundUser.roles)
+                //filter(Boolean) to eliminate all of those nulls  
+                const roles = Object.values(foundUser.roles).filter(Boolean)
 
                 //create JWTs from from this spot
                 const accessToken = jwt.sign(
@@ -46,7 +47,8 @@ const handleLogin = async (req, res) => {
                                                                                     //this is also working in httpOnly
                                                                                     //this is required when working with chrome
                 res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 })
-                res.json({ accessToken }) //send access token to the client/user
+                res.json({ roles, accessToken }) //send roles access token to the client/user
+                console.log('roles: ', roles)
             } else {
                 res.sendStatus(401) //401 status code is unauthorized
             }
